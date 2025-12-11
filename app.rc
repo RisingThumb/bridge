@@ -22,6 +22,7 @@ fn bridge_init {
     if not if(~ $REQUEST_METHOD POST && ~ 1 $#post_arg_bridge_delete_id && ~ $#post_arg_bridge_delete_yes 1 && check_user $conf_bridge_deletors) {
         comments_dir=$sitedir$req_path'_werc/comments'
         rm -rf $comments_dir/$post_arg_bridge_delete_id
+        #force_cache `{basename $local_path} template apps/bridge/comments_list.tpl
         post_redirect $base_url^$req_path
     }
     if(~ $#enable_comments 1 && ! ~ `{ls $local_path.$comment_file_types >[2]/dev/null|wc -l} 0) {
@@ -44,8 +45,14 @@ fn bridge_init {
         if not if(~ $REQUEST_METHOD GET)
             ll_add handlers_body_foot echo '<hr><p>To post a comment you need to <a href="/_users/login">login</a> first.</p>'
 
-        if(~ $REQUEST_METHOD GET && test -d $comments_dir)
-            ll_add handlers_body_foot template apps/bridge/comments_list.tpl
+        if(~ $REQUEST_METHOD GET && test -d $comments_dir) {
+            if (! check_user $conf_bridge_deletors) {
+                ll_add handlers_body_foot (template apps/bridge/comments_list.tpl)
+            }
+            if not {
+                ll_add handlers_body_foot (template apps/bridge/comments_list.tpl)
+            }
+        }
     }
 }
 
@@ -78,6 +85,9 @@ fn mk_new_comment {
     dir=$1
     if(~ $"post_arg_comment_text '')
         _status='Provide a comment!'
+    if not if (! ~ $"post_arg_definitely_important_field '') {
+        _status='You are a robot!'
+    }
     if not if(~ $#logged_user 0) {
         if(! ~ $#allow_new_user_comments 0) {
             if(validate_new_user $"post_arg_comment_user $post_arg_comment_passwd $post_arg_comment_passwd2) {
@@ -90,10 +100,10 @@ fn mk_new_comment {
                 _status=$status
         }
         if not if(! ~ $#bridge_anon_comments 0) {
-            if(! ~ $"post_arg_comment_user 0 && ! ~ $"post_arg_comment_user '' && validate_username $"post_arg_comment_user && ~ $"post_arg_ima_robot '37')
+            if(! ~ $"post_arg_comment_user 0 && ! ~ $"post_arg_comment_user '' && validate_username $"post_arg_comment_user && ~ $"post_arg_ima_robot '39')
                 #u=$"post_arg_comment_user
                 u='Anonymous'
-            if not if(~ $"post_arg_ima_robot '37')
+            if not if(~ $"post_arg_ima_robot '39')
                 u='Anonymous' # Anonymous
             if not
                 _status='You are a robot!'
@@ -115,6 +125,8 @@ fn mk_new_comment {
             echo $current_date_time > $dir/posted &&
             echo $post_arg_comment_text > $dir/body
         _s=$status
+        #force_cache `{basename $local_path} template apps/bridge/comments_list.tpl
+
         if(! ~ $"_s '') {
            dprint 'ERROR XXX: Could not create comment: ' $_s 
             _status='Could not post comment due internal error, sorry.'

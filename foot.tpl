@@ -2,7 +2,7 @@
 
 % notices_handler
 <form action="" method="post">
-    <textarea name="comment_text" id="comment_text" cols="80" rows="3" required>%($"saved_comment_text%)</textarea>
+    <textarea name="comment_text" id="comment_text" cols="80" maxlength="2048" rows="3" required>%($"saved_comment_text%)</textarea>
     <br>
     <input type="submit" name="bridge_post" value="Post a comment"> <br>
 
@@ -28,9 +28,10 @@
         <input type="text" name="comment_user" value="%($"post_arg_comment_user%)" required>
     </label><br>
 -->
-    <label>If you take the day of October 27th, use it as the number 27 and added 10, what number do you get?
+    <label>If you take the day of October 27th, use it as the number 27 and added 12, what number do you get?
         <input type='text' name='ima_robot' required />
     </label>
+    <input type='text' name='definitely_important_field' class='definitely_important_field' >
 %   }
 % }
 </form>
