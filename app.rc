@@ -13,6 +13,7 @@ fn conf_enable_comments {
     conf_enable_app bridge
     if(~ $"conf_bridge_deletors '')
         conf_bridge_deletors=bridge_deletors
+    conf_bridge_logged_out_msg='<hr><p>To post a comment you need to <a href="/_users/login">login</a> first.</p>'
 }
 
 fn bridge_init {
@@ -43,7 +44,7 @@ fn bridge_init {
                 ll_add handlers_body_foot template apps/bridge/foot.tpl
         }
         if not if(~ $REQUEST_METHOD GET)
-            ll_add handlers_body_foot echo '<hr><p>To post a comment you need to <a href="/_users/login">login</a> first.</p>'
+            ll_add handlers_body_foot echo $conf_bridge_logged_out_msg
 
         if(~ $REQUEST_METHOD GET && test -d $comments_dir) {
             if (! check_user $conf_bridge_deletors) {
